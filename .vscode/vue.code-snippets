@@ -1,0 +1,28 @@
+{
+	"vue-setup-script": {
+		"prefix": "script-setup",
+		"body": [
+			"<script setup>",
+			"definePageMeta({ layout: 'admin' })",
+			"$0",
+			"</script>"
+		],
+		"description": "vue-setup-script"
+	},
+	"vue-new-page": {
+		"prefix": "newvue",
+		"body": [
+			"<script setup>",
+			"</script>",
+			"",
+			"<template>",
+			"  <div>",
+			"  </div>",
+			"</template>",
+			"",
+			"<style lang=\"postcss\">",
+			"</style>",
+		],
+		"description": "new-vue-page"
+	}
+}
