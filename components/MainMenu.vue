@@ -1,4 +1,5 @@
 <script setup>
+defineEmits(['signOut'])
 const isCollapse = ref(true)
 const handleCollapse = () => {
   isCollapse.value = !isCollapse.value
@@ -57,6 +58,17 @@ const handleCollapse = () => {
             </el-icon>
             <template #title>
               設定
+            </template>
+          </el-menu-item>
+          <el-menu-item
+            index="4"
+            @click="$emit('signOut')"
+          >
+            <el-icon :size="25">
+              <Van />
+            </el-icon>
+            <template #title>
+              登出
             </template>
           </el-menu-item>
         </div>

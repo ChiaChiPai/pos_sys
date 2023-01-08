@@ -73,7 +73,7 @@ const addToCart = (info) => {
       >
         <template #default="slot">
           <el-switch
-            v-model="slot.row.soldOut"
+            v-model="slot.row.is_sold_out"
             class="ml-2"
             width="60"
             inline-prompt

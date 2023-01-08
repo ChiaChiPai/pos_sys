@@ -2,11 +2,13 @@
 /* global defineNuxtConfig */
 export default defineNuxtConfig({
   modules: [
+    '@nuxtjs/supabase',
     '@nuxtjs/tailwindcss',
     ['@pinia/nuxt', { autoImports: ['defineStore'] }]
   ],
   css: [
     'element-plus/dist/index.css',
-    'element-plus/theme-chalk/dark/css-vars.css'
+    'element-plus/theme-chalk/dark/css-vars.css',
+    '@/assets/style/main.css'
   ]
 })

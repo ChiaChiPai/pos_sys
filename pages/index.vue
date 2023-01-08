@@ -1,72 +1,21 @@
 <script setup>
-const tableData = ref({
-  snack: [
-    {
-      id: '1',
-      name: '原味司康',
-      price: 200,
-      count: 0,
-      soldOut: true
-    },
-    {
-      id: '2',
-      name: '原味司康',
-      price: 200,
-      count: 0,
-      soldOut: true
-    },
-    {
-      id: '3',
-      name: '原味司康',
-      price: 200,
-      count: 0,
-      soldOut: true
-    },
-    {
-      id: '4',
-      name: '原味司康',
-      price: 200,
-      count: 0,
-      soldOut: false
-    },
-    {
-      id: '5',
-      name: '鮮奶油',
-      price: 50,
-      discount: 1,
-      count: 10,
-      soldOut: false
-    }
-  ],
-  drink: [
-    {
-      id: '1',
-      name: '飲料1',
-      price: 200,
-      count: 0,
-      soldOut: true
-    },
-    {
-      id: '2',
-      name: '飲料2',
-      price: 200,
-      count: 0,
-      soldOut: true
-    },
-    {
-      id: '3',
-      name: '飲料3',
-      price: 200,
-      count: 0,
-      soldOut: true
-    }
-  ]
-})
+import { groupBy } from 'lodash'
+const supabase = useSupabaseClient()
+const user = useSupabaseUser()
 
-const tabMap = {
-  snack: '點心',
-  drink: '飲料'
-}
+const { data: menus } = await supabase
+  .from('menu')
+  .select('name, price, is_sold_out, type')
+  .eq('user_id', user.value.id)
+
+const tableData = ref({})
+
+const groupMenus = groupBy(menus, 'type')
+Object.keys(groupMenus).forEach(key => {
+  groupMenus[key] = groupMenus[key].map((item, idx) => ({ ...item, count: 1, id: idx + 1 }))
+})
+tableData.value = groupMenus
+
 const isShowCartList = ref(false)
 const showCarlist = () => {
   isShowCartList.value= true
@@ -86,7 +35,7 @@ const hideCarlist = () => {
         <el-tab-pane
           v-for="(menu, idx) in tableData"
           :key="idx"
-          :label="tabMap[idx]"
+          :label="idx.toUpperCase()"
           :name="idx"
         >
           <OrderTable :table-data="menu" />
