@@ -1,22 +1,35 @@
 <script setup>
 import { groupBy } from 'lodash'
-const supabase = useSupabaseClient()
-const user = useSupabaseUser()
-
-const { data: menus } = await supabase
-  .from('menu')
-  .select('name, price, is_sold_out, type')
-  .eq('user_id', user.value.id)
 
 const tableData = ref({})
+const isShowCartList = ref(false)
 
-const groupMenus = groupBy(menus, 'type')
+const { data: user } = await useFetch(
+  '/api/user',
+  {
+    method: 'get',
+    headers: useRequestHeaders(['cookie'])
+  }
+)
+
+const { data: menus } = await useFetch(
+  '/api/menu',
+  {
+    method: 'get',
+    headers: useRequestHeaders(['cookie']),
+    params: {
+      id: user.value.id
+    }
+  }
+)
+
+const groupMenus = groupBy(menus.value, 'type')
 Object.keys(groupMenus).forEach(key => {
   groupMenus[key] = groupMenus[key].map((item, idx) => ({ ...item, count: 1, id: idx + 1 }))
 })
 tableData.value = groupMenus
 
-const isShowCartList = ref(false)
+
 const showCarlist = () => {
   isShowCartList.value= true
 }

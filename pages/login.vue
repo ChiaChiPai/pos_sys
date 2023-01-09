@@ -1,4 +1,6 @@
 <script setup>
+import { ElMessage } from 'element-plus'
+
 definePageMeta({
   layout: false
 })
@@ -6,66 +8,112 @@ const client = useSupabaseAuthClient()
 const router = useRouter()
 
 const loading = ref(false)
-const signUp = ref({
-  email: '',
-  password: ''
-})
+const signInRef = ref(null)
+const signUpRef = ref(null)
 const signIn = ref({
   email: '',
   password: ''
 })
-const handleSignIn = async() => {
+const signUp = ref({
+  email: '',
+  password: ''
+})
+const rules = reactive({
+  email: [
+    { required: true, message: '請輸入 email', trigger: 'blur' },
+    { pattern: /^[\w-\\.]+@([\w-]+\.)+[\w-]{2,4}$/, trigger: 'blur', message: '請輸入正確的 email 格式' }
+  ],
+  password: [
+    { required: true, message: '請輸入密碼', trigger: 'blur' },
+    { pattern: /^(?=.*[a-zA-Z0-9]).{6,}$/, trigger: 'blur', message: '請輸入至少六位數的密碼' }
+  ]
+})
+
+const handleSubmit = async(formEl, callback) => {
   try {
-    const { error } = await client.auth.signInWithPassword({ email: signIn.value.email, password: signIn.value.password })
-    if (error) throw error
-    router.push('/')
+    await formEl.validate()
+    loading.value = true
+    const { error, action } = await callback()
+    if (error)
+      ElMessage.error(error.message)
+    else
+      action()
   }
   catch (error) {
-    alert(error.error_description || error.message)
+    throw createError(error)
   }
   finally {
     loading.value = false
   }
 }
-const handleSignUp = async() => {
-  try {
-    const { error } = await client.auth.signUp({ email: signUp.value.email, password: signUp.value.password })
-    if (error) throw error
-    router.push('/')
-  }
-  catch (error) {
-    alert(error.error_description || error.message)
-  }
-  finally {
-    loading.value = false
-  }
+const postSignIn = async() => {
+  const { error } = await client.auth.signInWithPassword({ email: signIn.value.email, password: signIn.value.password })
+  return new Promise(resolve => resolve({
+    error,
+    action: () => {
+      router.push({
+        name: 'index'
+      })
+    }
+  }))
 }
-const activeName = ref('signIn')
+
+const postSignUp = async() => {
+  const { error } = await client.auth.signUp({ email: signUp.value.email, password: signUp.value.password })
+  return new Promise(resolve => resolve({
+    error,
+    action: () => {
+      ElMessage({
+        message: '請先到註冊信箱驗證帳號',
+        type: 'info'
+      })
+      signUp.value.email = ''
+      signUp.value.password = ''
+    }
+  }))
+}
+
+const handleSignIn = (formEl) => {
+  handleSubmit(formEl, postSignIn)
+}
+
+const handleSignUp = (formEl) => {
+  handleSubmit(formEl, postSignUp)
+}
+
 </script>
 
 <template>
   <el-tabs
-    v-model="activeName"
+    :model-value="'signIn'"
     type="border-card"
-    stretch="true"
+    :stretch="true"
     class="absolute left-1/2 top-1/2 w-1/3 -translate-x-1/2 -translate-y-1/2"
-    @tab-click="handleClick"
   >
     <el-tab-pane
       label="登入"
       name="signIn"
     >
       <el-form
+        ref="signInRef"
         label-width="100px"
         :model="signIn"
+        :rules="rules"
       >
-        <el-form-item label="Email">
+        <el-form-item
+          prop="email"
+          label="Email"
+        >
           <el-input
             v-model="signIn.email"
             type="email"
+            autocomplete
           />
         </el-form-item>
-        <el-form-item label="Password">
+        <el-form-item
+          prop="password"
+          label="Password"
+        >
           <el-input
             v-model="signIn.password"
             type="password"
@@ -74,7 +122,8 @@ const activeName = ref('signIn')
         <div class="flex justify-end">
           <el-button
             type="warning"
-            @click="handleSignIn"
+            :loading="loading"
+            @click="handleSignIn(signInRef)"
           >
             登入
           </el-button>
@@ -86,16 +135,25 @@ const activeName = ref('signIn')
       name="signUp"
     >
       <el-form
+        ref="signUpRef"
         label-width="100px"
         :model="signUp"
+        :rules="rules"
       >
-        <el-form-item label="Email">
+        <el-form-item
+          prop="email"
+          label="Email"
+        >
           <el-input
             v-model="signUp.email"
+
             type="email"
           />
         </el-form-item>
-        <el-form-item label="Password">
+        <el-form-item
+          prop="password"
+          label="Password"
+        >
           <el-input
             v-model="signUp.password"
             type="password"
@@ -104,7 +162,8 @@ const activeName = ref('signIn')
         <div class="flex justify-end">
           <el-button
             type="warning"
-            @click="handleSignUp"
+            :loading="loading"
+            @click="handleSignUp(signUpRef)"
           >
             註冊
           </el-button>

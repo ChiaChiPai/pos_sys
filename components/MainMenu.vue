@@ -7,8 +7,8 @@ const handleCollapse = () => {
 </script>
 
 <template>
-  <client-only>
-    <div class="absolute z-10">
+  <div class="absolute z-10">
+    <client-only>
       <el-menu
         class="flex h-screen w-[200px] flex-col justify-center"
         :collapse="isCollapse"
@@ -73,8 +73,8 @@ const handleCollapse = () => {
           </el-menu-item>
         </div>
       </el-menu>
-    </div>
-  </client-only>
+    </client-only>
+  </div>
 </template>
 
 <style lang="postcss">

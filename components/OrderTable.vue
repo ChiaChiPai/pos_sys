@@ -16,7 +16,7 @@ const addToCart = (info) => {
 </script>
 
 <template>
-  <div>
+  <client-only>
     <el-table
       :data="props.tableData"
       stripe
@@ -84,7 +84,7 @@ const addToCart = (info) => {
         </template>
       </el-table-column>
     </el-table>
-  </div>
+  </client-only>
 </template>
 
 <style lang="postcss">
