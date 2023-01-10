@@ -47,7 +47,11 @@ const handleSubmit = async(formEl, callback) => {
   }
 }
 const postSignIn = async() => {
-  const { error } = await client.auth.signInWithPassword({ email: signIn.value.email, password: signIn.value.password })
+  const { error } = await client.auth.signInWithPassword({
+    email: signIn.value.email,
+    password: signIn.value.password
+  })
+
   return new Promise(resolve => resolve({
     error,
     action: () => {
@@ -59,7 +63,10 @@ const postSignIn = async() => {
 }
 
 const postSignUp = async() => {
-  const { error } = await client.auth.signUp({ email: signUp.value.email, password: signUp.value.password })
+  const { error } = await client.auth.signUp({
+    email: signUp.value.email,
+    password: signUp.value.password
+  })
   return new Promise(resolve => resolve({
     error,
     action: () => {
@@ -123,6 +130,7 @@ const handleSignUp = (formEl) => {
           <el-button
             type="warning"
             :loading="loading"
+            native-type="submit"
             @click="handleSignIn(signInRef)"
           >
             登入
@@ -163,6 +171,7 @@ const handleSignUp = (formEl) => {
           <el-button
             type="warning"
             :loading="loading"
+            native-type="submit"
             @click="handleSignUp(signUpRef)"
           >
             註冊

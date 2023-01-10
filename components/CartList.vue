@@ -120,21 +120,23 @@ const options = [
         <div class="border-t border-gray-200 py-6 px-4 sm:px-6">
           <div class="mb-2 flex items-center justify-between text-base font-medium text-gray-900">
             <p>折扣</p>
-            <el-select
-              v-model="value"
-              filterable
-              allow-create
-              default-first-option
-              :reserve-keyword="false"
-              placeholder="請選擇"
-            >
-              <el-option
-                v-for="item in options"
-                :key="item.value"
-                :label="item.label"
-                :value="item.value"
-              />
-            </el-select>
+            <client-only>
+              <el-select
+                v-model="value"
+                filterable
+                allow-create
+                default-first-option
+                :reserve-keyword="false"
+                placeholder="請選擇"
+              >
+                <el-option
+                  v-for="item in options"
+                  :key="item.value"
+                  :label="item.label"
+                  :value="item.value"
+                />
+              </el-select>
+            </client-only>
           </div>
           <div class="flex justify-between text-base font-medium text-gray-900">
             <p>總共</p>
