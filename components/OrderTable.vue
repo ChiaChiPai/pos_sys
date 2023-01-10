@@ -1,4 +1,5 @@
 <script setup>
+const emit = defineEmits(['addToCart'])
 const props = defineProps(
   {
     'tableData': {
@@ -9,10 +10,6 @@ const props = defineProps(
 )
 
 const canNotAddToCart = (info) => info.soldOut || info.count === 0
-
-const addToCart = (info) => {
-  console.log(info)
-}
 </script>
 
 <template>
@@ -61,7 +58,7 @@ const addToCart = (info) => {
             size="large"
             type="warning"
             plain
-            @click="addToCart(slot.row)"
+            @click="emit('addToCart', slot.row)"
           >
             加入
           </el-button>

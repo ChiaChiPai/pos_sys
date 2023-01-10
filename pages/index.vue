@@ -1,16 +1,13 @@
 <script setup>
 import { groupBy } from 'lodash'
+import { useUserStore } from '~/stores/auth'
 
 const tableData = ref({})
 const isShowCartList = ref(false)
 
-const { data: user } = await useFetch(
-  '/api/user',
-  {
-    method: 'get',
-    headers: useRequestHeaders(['cookie'])
-  }
-)
+
+const store = useUserStore()
+const { userInfo } = await store
 
 const { data: menus } = await useFetch(
   '/api/menu',
@@ -18,7 +15,7 @@ const { data: menus } = await useFetch(
     method: 'get',
     headers: useRequestHeaders(['cookie']),
     params: {
-      id: user.value.id
+      id: userInfo.id
     }
   }
 )
@@ -29,6 +26,21 @@ Object.keys(groupMenus).forEach(key => {
 })
 tableData.value = groupMenus
 
+const client = useSupabaseClient()
+
+const addToCart = async() => {
+  // const { data, error } = await useFetch(
+  //   '/api/order',
+  //   {
+  //     method: 'post',
+  //     headers: useRequestHeaders(['cookie']),
+  //     body: {
+  //       user_id: userInfo.id,
+  //       order_id: Date.now()
+  //     }
+  //   }
+  // )
+}
 
 const showCarlist = () => {
   isShowCartList.value= true
@@ -51,7 +63,10 @@ const hideCarlist = () => {
           :label="idx.toUpperCase()"
           :name="idx"
         >
-          <OrderTable :table-data="menu" />
+          <OrderTable
+            :table-data="menu"
+            @add-to-cart="addToCart"
+          />
         </el-tab-pane>
       </el-tabs>
     </div>
