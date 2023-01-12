@@ -2,7 +2,7 @@
 const props = defineProps({
   total: {
     type: Number,
-    default: 0
+    required: true
   }
 })
 
@@ -14,7 +14,6 @@ const props = defineProps({
   >
     <el-badge
       :value="props.total"
-      :max="99"
     >
       <el-icon
         size="60"
@@ -25,6 +24,3 @@ const props = defineProps({
     </el-badge>
   </div>
 </template>
-
-<style lang="postcss">
-</style>

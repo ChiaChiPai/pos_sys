@@ -5,9 +5,21 @@ import { useUserStore } from '~/stores/auth'
 const tableData = ref({})
 const isShowCartList = ref(false)
 
+const cartTotal = computed(() => exist_order_list.value ? exist_order_list.value.length : 0)
+
+const exist_order_list = useSessionStorage(
+  'order_list',
+  null,
+  {
+    serializer: {
+      read: (v) => v ? JSON.parse(v) : null,
+      write: (v) => JSON.stringify(v)
+    }
+  }
+)
 
 const store = useUserStore()
-const { userInfo } = await store
+const { userInfo } = store
 
 const { data: menus } = await useFetch(
   '/api/menu',
@@ -26,20 +38,46 @@ Object.keys(groupMenus).forEach(key => {
 })
 tableData.value = groupMenus
 
-const client = useSupabaseClient()
+const addToCart = ({ name, count, price, type }) => {
+  const mergeArray = (origin, income) => {
+    const isExist = origin.find(item => item.name === income.name)
+    if(isExist) {
+      return origin
+        .map(item => (
+          item.name === income.name ?
+            {
+              ...item,
+              count: item.count + income.count
+            } : item
+        ))
+    }
+    else {
+      return [...origin, income]
+    }
+  }
 
-const addToCart = async() => {
-  // const { data, error } = await useFetch(
-  //   '/api/order',
-  //   {
-  //     method: 'post',
-  //     headers: useRequestHeaders(['cookie']),
-  //     body: {
-  //       user_id: userInfo.id,
-  //       order_id: Date.now()
-  //     }
-  //   }
-  // )
+  exist_order_list.value ?
+    exist_order_list.value = mergeArray(exist_order_list.value, { name, count, price, type }) :
+    exist_order_list.value = [{ name, count, price, type }]
+}
+
+const changeOrderCount = ({ name, changedCount }) => {
+  exist_order_list.value = exist_order_list.value
+    .map(order => {
+      if(order.name === name) {
+        return {
+          ...order,
+          count: changedCount
+        }
+      }
+      else {
+        return order
+      }
+    })
+}
+
+const clearOrderList = () => {
+  exist_order_list.value = null
 }
 
 const showCarlist = () => {
@@ -78,10 +116,13 @@ const hideCarlist = () => {
       />
       <CartList
         :class="{'right-0': isShowCartList, '-right-full':!isShowCartList }"
+        :order-list="exist_order_list"
+        @change-order-count="changeOrderCount"
+        @clear-order-list="clearOrderList"
       />
     </div>
     <ShopCart
-      :total="11"
+      :total="cartTotal"
       @click="showCarlist"
     />
   </div>

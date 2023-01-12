@@ -1,28 +1,109 @@
 <script setup>
-const value = ref([])
+import { ElMessage } from 'element-plus'
+import { useUserStore } from '~/stores/auth'
+
+const emit = defineEmits(['changeOrderCount', 'clearOrderList'])
+
+const props = defineProps(
+  {
+    orderList: {
+      type: Array,
+      default: () => []
+    }
+  }
+)
+
 const options = [
   {
-    value: '1',
-    label: '不套用'
+    value: '0.95',
+    label: '0.95'
   },
   {
-    value: '9',
-    label: '9'
+    value: '0.9',
+    label: '0.9'
   },
   {
-    value: '8',
-    label: '8'
+    value: '0.85',
+    label: '0.85'
   },
   {
-    value: '7',
-    label: '7'
+    value: '0.8',
+    label: '0.8'
   }
 ]
+const discountRate = ref(null)
+const discountedTotal = ref(null)
+
+const total = computed(() =>
+  props.orderList
+    ?.reduce((pre, cur) => pre + (cur.price * cur.count), 0)
+)
+
+const applyDiscount = () => {
+  if(discountRate.value > 1) {
+    ElMessage.error('想賠錢嗎？輸入小於 1 的數字!!')
+    return
+  }
+  discountedTotal.value = total.value * (discountRate ? discountRate.value : 1)
+}
+
+const store = useUserStore()
+const { userInfo } = store
+
+const resetCartStatus = () => {
+  emit('clearOrderList')
+  discountRate.value = null
+  discountedTotal.value = null
+}
+
+const checkOut = async({ isCheckOut }) => {
+  const {
+    data: { value: { data: response } },
+    error: { value: order_overview_error }
+  } = await useFetch(
+    '/api/order_overview',
+    {
+      method: 'post',
+      headers: useRequestHeaders(['cookie']),
+      body: {
+        user_id: userInfo.id,
+        order_id: Date.now(),
+        discount: discountedTotal.value ? parseFloat(discountRate.value) : 1,
+        isCheckOut
+      }
+    }
+  )
+
+  if(order_overview_error)
+    throw createError(order_overview_error)
+
+  const {
+    error: { value: order_list_error }
+  } = await useFetch(
+    '/api/order_list',
+    {
+      method: 'post',
+      headers: useRequestHeaders(['cookie']),
+      body: props.orderList.map(({ name, price, count }) => ({
+        order_id: response[0].order_id,
+        name,
+        price,
+        count
+      }))
+    }
+  )
+
+  if(order_list_error)
+    throw createError(order_list_error)
+
+  resetCartStatus()
+}
+
 </script>
 
 <template>
   <div class="pointer-events-none fixed inset-y-0 right-0 z-10 flex max-w-full pl-10">
-    <div class="pointer-events-auto w-screen max-w-md">
+    <div class="pointer-events-auto w-screen max-w-sm">
       <div class="flex h-full flex-col overflow-y-scroll bg-white shadow-xl">
         <div class="flex-1 overflow-y-auto py-6 px-4 sm:px-6">
           <div class="mt-8">
@@ -31,32 +112,30 @@ const options = [
                 role="list"
                 class="-my-6 divide-y divide-gray-200"
               >
-                <li class="flex py-6">
-                  <div class="h-24 w-24 shrink-0 overflow-hidden rounded-md border border-gray-200">
-                    <img
-                      src="https://imageproxy.icook.network/resize?background=255%2C255%2C255&nocrop=true&stripmeta=true&type=auto&url=http%3A%2F%2Ftokyo-kitchen.icook.tw.s3.amazonaws.com%2Fuploads%2Frecipe%2Fcover%2F387949%2F94857079956dc181.jpg&width=1080"
-                      alt="Salmon orange fabric pouch with match zipper, gray zipper pull, and adjustable hip belt."
-                      class="h-full w-full object-cover object-center"
-                    >
-                  </div>
-
+                <li
+                  v-for="order in props.orderList"
+                  :key="order.name"
+                  class="flex py-6"
+                >
                   <div class="ml-4 flex flex-1 flex-col">
                     <div>
                       <div class="flex justify-between text-base font-medium text-gray-900">
                         <h3>
-                          <a href="#">原味司康</a>
+                          <a href="#">{{ order.name }}</a>
                         </h3>
                         <p class="ml-4">
-                          $90
+                          ${{ order.price }}
                         </p>
                       </div>
                       <p class="mt-1 text-sm text-gray-500">
-                        甜點
+                        {{ order.type }}
                       </p>
                     </div>
                     <div class="flex flex-1 items-end justify-between text-sm">
                       <el-input-number
+                        :model-value="order.count"
                         :min="1"
+                        @change="(changedCount) => emit('changeOrderCount', { name: order.name, changedCount })"
                       />
 
                       <div class="flex">
@@ -70,48 +149,6 @@ const options = [
                     </div>
                   </div>
                 </li>
-
-                <li class="flex py-6">
-                  <div class="h-24 w-24 shrink-0 overflow-hidden rounded-md border border-gray-200">
-                    <img
-                      src="https://imageproxy.icook.network/resize?background=255%2C255%2C255&nocrop=true&stripmeta=true&type=auto&url=http%3A%2F%2Ftokyo-kitchen.icook.tw.s3.amazonaws.com%2Fuploads%2Frecipe%2Fcover%2F387949%2F94857079956dc181.jpg&width=1080"
-                      alt="Salmon orange fabric pouch with match zipper, gray zipper pull, and adjustable hip belt."
-                      class="h-full w-full object-cover object-center"
-                    >
-                  </div>
-
-                  <div class="ml-4 flex flex-1 flex-col">
-                    <div>
-                      <div class="flex justify-between text-base font-medium text-gray-900">
-                        <h3>
-                          <a href="#">藍莓司康</a>
-                        </h3>
-                        <p class="ml-4">
-                          $90
-                        </p>
-                      </div>
-                      <p class="mt-1 text-sm text-gray-500">
-                        甜點
-                      </p>
-                    </div>
-                    <div class="flex flex-1 items-end justify-between text-sm">
-                      <el-input-number
-                        :min="1"
-                      />
-
-                      <div class="flex">
-                        <button
-                          type="button"
-                          class="font-medium text-[#f00]"
-                        >
-                          刪除
-                        </button>
-                      </div>
-                    </div>
-                  </div>
-                </li>
-
-                <!-- More products... -->
               </ul>
             </div>
           </div>
@@ -119,15 +156,19 @@ const options = [
 
         <div class="border-t border-gray-200 py-6 px-4 sm:px-6">
           <div class="mb-2 flex items-center justify-between text-base font-medium text-gray-900">
-            <p>折扣</p>
+            <p class="mr-auto">
+              折扣
+            </p>
             <client-only>
               <el-select
-                v-model="value"
+                v-model="discountRate"
                 filterable
                 allow-create
                 default-first-option
                 :reserve-keyword="false"
                 placeholder="請選擇"
+                class="w-[40%]"
+                :disabled="!props.orderList?.length"
               >
                 <el-option
                   v-for="item in options"
@@ -137,18 +178,56 @@ const options = [
                 />
               </el-select>
             </client-only>
+            <el-button
+              type="warning"
+              plain
+              :disabled="!discountRate"
+              @click="applyDiscount"
+            >
+              套用
+            </el-button>
           </div>
           <div class="flex justify-between text-base font-medium text-gray-900">
-            <p>總共</p>
-            <p>$262.00</p>
+            <p class="">
+              總共
+            </p>
+            <del v-if="discountedTotal">${{ total }}</del>
+            <p
+              v-else
+              class="text-xl"
+            >
+              ${{ total ? total : 0 }}
+            </p>
           </div>
-          <div class="mt-6">
+          <div
+            v-show="discountedTotal"
+            class="flex justify-between font-medium text-gray-900"
+          >
+            <p>折扣後</p>
+            <p class="text-xl text-red-700 ">
+              ${{ discountedTotal }}
+            </p>
+          </div>
+          <div class="mt-3">
             <el-button
               type="warning"
               class="w-full"
               size="large"
+              :disabled="!props.orderList?.length"
+              @click="checkOut({ isCheckOut: false })"
             >
-              確認
+              加入待結帳清單
+            </el-button>
+          </div>
+          <div class="mt-5">
+            <el-button
+              type="danger"
+              class="w-full"
+              size="large"
+              :disabled="!props.orderList?.length"
+              @click="checkOut({ isCheckOut: true })"
+            >
+              立即結帳
             </el-button>
           </div>
         </div>
