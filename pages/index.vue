@@ -38,7 +38,7 @@ Object.keys(groupMenus).forEach(key => {
 })
 tableData.value = groupMenus
 
-const addToCart = ({ name, count, price, type }) => {
+const addToCart = async({ name, count, price, type }) => {
   const mergeArray = (origin, income) => {
     const isExist = origin.find(item => item.name === income.name)
     if(isExist) {
@@ -77,6 +77,7 @@ const changeOrderCount = ({ name, changedCount }) => {
 }
 
 const clearOrderList = () => {
+  console.log('clear order')
   exist_order_list.value = null
 }
 
@@ -109,17 +110,20 @@ const hideCarlist = () => {
       </el-tabs>
     </div>
     <div>
-      <div
+      <template
         v-if="isShowCartList"
-        class="fixed top-0 left-0 z-10 h-screen w-screen bg-[rgba(0,0,0,0.3)]"
-        @click="hideCarlist"
-      />
-      <CartList
-        :class="{'right-0': isShowCartList, '-right-full':!isShowCartList }"
-        :order-list="exist_order_list"
-        @change-order-count="changeOrderCount"
-        @clear-order-list="clearOrderList"
-      />
+      >
+        <div
+          class="fixed top-0 left-0 z-10 h-screen w-screen bg-[rgba(0,0,0,0.3)]"
+          @click="hideCarlist"
+        />
+        <CartList
+          :class="{'right-0': isShowCartList, '-right-full':!isShowCartList }"
+          :order-list="exist_order_list"
+          @change-order-count="changeOrderCount"
+          @clear-order-list="clearOrderList"
+        />
+      </template>
     </div>
     <ShopCart
       :total="cartTotal"

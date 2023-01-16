@@ -1,6 +1,5 @@
 <script setup>
 import { ElMessage } from 'element-plus'
-import { useUserStore } from '~/stores/auth'
 
 const emit = defineEmits(['changeOrderCount', 'clearOrderList'])
 
@@ -15,23 +14,27 @@ const props = defineProps(
 
 const options = [
   {
-    value: '0.95',
+    value: 1,
+    label: '不使用折扣'
+  },
+  {
+    value: 0.95,
     label: '0.95'
   },
   {
-    value: '0.9',
+    value: 0.9,
     label: '0.9'
   },
   {
-    value: '0.85',
+    value: 0.85,
     label: '0.85'
   },
   {
-    value: '0.8',
+    value: 0.8,
     label: '0.8'
   }
 ]
-const discountRate = ref(null)
+const discountRate = ref(1)
 const discountedTotal = ref(null)
 
 const total = computed(() =>
@@ -44,11 +47,8 @@ const applyDiscount = () => {
     ElMessage.error('想賠錢嗎？輸入小於 1 的數字!!')
     return
   }
-  discountedTotal.value = total.value * (discountRate ? discountRate.value : 1)
+  discountedTotal.value = Math.round(total.value * (discountRate.value < 1 ? discountRate.value : 1))
 }
-
-const store = useUserStore()
-const { userInfo } = store
 
 const resetCartStatus = () => {
   emit('clearOrderList')
@@ -56,46 +56,8 @@ const resetCartStatus = () => {
   discountedTotal.value = null
 }
 
-const checkOut = async({ isCheckOut }) => {
-  const {
-    data: { value: { data: response } },
-    error: { value: order_overview_error }
-  } = await useFetch(
-    '/api/order_overview',
-    {
-      method: 'post',
-      headers: useRequestHeaders(['cookie']),
-      body: {
-        user_id: userInfo.id,
-        order_id: Date.now(),
-        discount: discountedTotal.value ? parseFloat(discountRate.value) : 1,
-        isCheckOut
-      }
-    }
-  )
-
-  if(order_overview_error)
-    throw createError(order_overview_error)
-
-  const {
-    error: { value: order_list_error }
-  } = await useFetch(
-    '/api/order_list',
-    {
-      method: 'post',
-      headers: useRequestHeaders(['cookie']),
-      body: props.orderList.map(({ name, price, count }) => ({
-        order_id: response[0].order_id,
-        name,
-        price,
-        count
-      }))
-    }
-  )
-
-  if(order_list_error)
-    throw createError(order_list_error)
-
+const checkOut = async({ isCheckout }) => {
+  await usePostOrderInfo({ discountRate: discountRate.value, isCheckout, orderList: props.orderList })
   resetCartStatus()
 }
 
@@ -159,25 +121,23 @@ const checkOut = async({ isCheckOut }) => {
             <p class="mr-auto">
               折扣
             </p>
-            <client-only>
-              <el-select
-                v-model="discountRate"
-                filterable
-                allow-create
-                default-first-option
-                :reserve-keyword="false"
-                placeholder="請選擇"
-                class="w-[40%]"
-                :disabled="!props.orderList?.length"
-              >
-                <el-option
-                  v-for="item in options"
-                  :key="item.value"
-                  :label="item.label"
-                  :value="item.value"
-                />
-              </el-select>
-            </client-only>
+            <el-select
+              v-model="discountRate"
+              filterable
+              allow-create
+              default-first-option
+              :reserve-keyword="false"
+              placeholder="請選擇"
+              class="w-[40%]"
+              :disabled="!props.orderList?.length"
+            >
+              <el-option
+                v-for="item in options"
+                :key="item.value"
+                :label="item.label"
+                :value="item.value"
+              />
+            </el-select>
             <el-button
               type="warning"
               plain
@@ -214,7 +174,7 @@ const checkOut = async({ isCheckOut }) => {
               class="w-full"
               size="large"
               :disabled="!props.orderList?.length"
-              @click="checkOut({ isCheckOut: false })"
+              @click="checkOut({ isCheckout: false })"
             >
               加入待結帳清單
             </el-button>
@@ -225,7 +185,7 @@ const checkOut = async({ isCheckOut }) => {
               class="w-full"
               size="large"
               :disabled="!props.orderList?.length"
-              @click="checkOut({ isCheckOut: true })"
+              @click="checkOut({ isCheckout: true })"
             >
               立即結帳
             </el-button>

@@ -12,15 +12,17 @@ const props = defineProps({
   <div
     class="fixed right-10 bottom-5 cursor-pointer"
   >
-    <el-badge
-      :value="props.total"
-    >
-      <el-icon
-        size="60"
-        color="#848484"
+    <client-only>
+      <el-badge
+        :value="props.total"
       >
-        <ShoppingCartFull />
-      </el-icon>
-    </el-badge>
+        <el-icon
+          size="60"
+          color="#848484"
+        >
+          <ShoppingCartFull />
+        </el-icon>
+      </el-badge>
+    </client-only>
   </div>
 </template>

@@ -1,4 +1,3 @@
-/* eslint-disable no-undef */
 import { serverSupabaseClient } from '#supabase/server'
 
 export default eventHandler(async(event) => {

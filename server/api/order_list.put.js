@@ -2,13 +2,11 @@ import { serverSupabaseClient } from '#supabase/server'
 
 export default eventHandler(async(event) => {
   const client = serverSupabaseClient(event)
-  const { user_id, order_id, discount, is_checkout } = await readBody(event)
+  const payload = await readBody(event)
   const { data, error } = await client
-    .from('order_overview')
-    .insert([
-      { user_id, order_id, discount, is_checkout }
-    ])
-    .select('order_id')
+    .from('order_list')
+    .update({ other_column: 'otherValue' })
+    .eq('some_column', 'someValue')
   return { data, error }
 })
 

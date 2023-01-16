@@ -104,6 +104,7 @@ module.exports = {
     'vars-on-top': 'error',
     'space-before-function-paren': ['error', 'never'],
     'space-before-blocks': ['error', 'always'],
-    'space-in-parens': ['error', 'never']
+    'space-in-parens': ['error', 'never'],
+    'no-undef': 'off'
   }
 }
