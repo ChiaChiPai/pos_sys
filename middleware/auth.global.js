@@ -1,29 +1,23 @@
 /* eslint-disable no-undef */
-import { useUserStore } from '~/stores/auth'
-
 const getUserInfo = async() => {
-  const store = useUserStore()
-  const { data: user } = await useFetch(
+  const { data: userInfo } = await useFetch(
     '/api/user',
     {
       method: 'get',
       headers: useRequestHeaders(['cookie'])
     }
   )
-  store.$patch({
-    userInfo: user
-  })
+  useSetUserInfo(userInfo)
 }
+
 export default defineNuxtRouteMiddleware(async(to) => {
   const user = useSupabaseUser()
-  if(!user.value && to.path !== '/login') {
-    navigateTo('/login')
-  }
-  else if(user.value && to.path === '/login') {
+
+  if(user.value && to.path === '/login')
     navigateTo('/')
-    await getUserInfo()
-  }
-  else {
-    await getUserInfo()
-  }
+  else if(!user.value && to.path !== '/login')
+    navigateTo('/login')
+  else if(user.value)
+    useSetUserInfo(user.value)
+
 })

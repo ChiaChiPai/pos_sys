@@ -67,7 +67,6 @@ async function updateOrder({ orderID: order_id, isCheckout: is_checkout }) {
 }
 
 async function updateOrderItem({ id, count }) {
-  console.log(2, id, count)
   const {
     data: { value: { error } }
   } = await useFetch(

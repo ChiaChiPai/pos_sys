@@ -74,9 +74,9 @@ const checkOut = async({ orderID }) => {
   props.refresh()
 }
 
-const main = useModalStore()
+const dialog = useModalStore()
 const handleEdit = async(index, editInfo) => {
-  main.changeEditInfo(editInfo)
+  dialog.changeEditInfo(editInfo)
 }
 
 const handleDelete = async(index, row) => {
@@ -118,11 +118,11 @@ const handleDelete = async(index, row) => {
           />
           <el-table-column
             prop="price"
-            label="價錢"
+            label="原價"
           />
           <el-table-column
             prop="discount"
-            label="折扣"
+            label="折扣後"
             width="80"
           >
             <template #default="scope">

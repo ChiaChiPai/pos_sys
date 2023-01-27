@@ -47,7 +47,7 @@ const handleSubmit = async(formEl, callback) => {
   }
 }
 const postSignIn = async() => {
-  const { error } = await client.auth.signInWithPassword({
+  const { data: { user }, error } = await client.auth.signInWithPassword({
     email: signIn.value.email,
     password: signIn.value.password
   })
@@ -55,6 +55,7 @@ const postSignIn = async() => {
   return new Promise(resolve => resolve({
     error,
     action: () => {
+      useSetUserInfo(user)
       router.push({
         name: 'index'
       })
