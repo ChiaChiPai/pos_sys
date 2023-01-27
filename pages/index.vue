@@ -102,7 +102,7 @@ const hideCarlist = () => {
           :label="idx.toUpperCase()"
           :name="idx"
         >
-          <OrderTable
+          <IndexOrderTable
             :table-data="menu"
             @add-to-cart="addToCart"
           />
@@ -117,7 +117,7 @@ const hideCarlist = () => {
           class="fixed top-0 left-0 z-10 h-screen w-screen bg-[rgba(0,0,0,0.3)]"
           @click="hideCarlist"
         />
-        <CartList
+        <IndexCartList
           :class="{'right-0': isShowCartList, '-right-full':!isShowCartList }"
           :order-list="exist_order_list"
           @change-order-count="changeOrderCount"
@@ -125,7 +125,7 @@ const hideCarlist = () => {
         />
       </template>
     </div>
-    <ShopCart
+    <IndexShopCart
       :total="cartTotal"
       @click="showCarlist"
     />

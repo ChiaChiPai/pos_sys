@@ -1,4 +1,6 @@
 <script setup>
+import { useModalStore } from '~~/stores/modal'
+
 const props = defineProps({
   billData: {
     type: Array,
@@ -12,21 +14,26 @@ const props = defineProps({
 })
 
 const billData = computed(() => {
-  return props.billData
+  const billList = props.billData
     .map(item => ({
       ...item,
       order_list: item.order_list
         .map((order, index) => ({
-          ...order, id: index+1,
+          ...order, sid: index+1,
           discount: item.discount
         }))
     }))
+
+
+  return new Array(0)
+    .concat(...billList.filter(bill => !bill.is_checkout).sort((a, b) => b.order_id - a.order_id))
+    .concat(...billList.filter(bill => bill.is_checkout).sort((a, b) => b.order_id - a.order_id))
 })
 
 const summaryMethod = ({ columns, data }) => {
   const discount = data[0].discount
   return columns.reduce((sum, column, index) => {
-    if(column.property === 'id')
+    if(column.property === 'sid')
       sum[index] = '總計'
 
     if(column.property === 'count') {
@@ -64,6 +71,16 @@ const spanMethod = ({ rowIndex, columnIndex }) => {
 
 const checkOut = async({ orderID }) => {
   await useUpdateOrder({ isCheckout: true, orderID })
+  props.refresh()
+}
+
+const main = useModalStore()
+const handleEdit = async(index, editInfo) => {
+  main.changeEditInfo(editInfo)
+}
+
+const handleDelete = async(index, row) => {
+
 }
 </script>
 
@@ -86,7 +103,7 @@ const checkOut = async({ orderID }) => {
           :span-method="(info) => spanMethod(info)"
         >
           <el-table-column
-            prop="id"
+            prop="sid"
             label="編號"
             min-width="60"
           />
@@ -106,6 +123,7 @@ const checkOut = async({ orderID }) => {
           <el-table-column
             prop="discount"
             label="折扣"
+            width="80"
           >
             <template #default="scope">
               <div>
@@ -113,24 +131,31 @@ const checkOut = async({ orderID }) => {
               </div>
             </template>
           </el-table-column>
+          <el-table-column
+            label="Operations"
+            width="185"
+          >
+            <template #default="scope">
+              <el-button
+                size="large"
+                :disabled="billList.is_checkout"
+                @click="handleEdit(scope.$index, scope.row)"
+              >
+                修改
+              </el-button>
+              <el-button
+                size="large"
+                type="danger"
+                :disabled="billList.is_checkout"
+                @click="handleDelete(scope.$index, scope.row)"
+              >
+                刪除
+              </el-button>
+            </template>
+          </el-table-column>
         </el-table>
       </client-only>
       <div class="mt-5 flex justify-end">
-        <el-button
-          size="large"
-          @click="props.refresh"
-        >
-          修改
-        </el-button>
-        <el-button
-          size="large"
-          class="mr-auto"
-          type="danger"
-          plain
-          @click="props.refresh"
-        >
-          刪除
-        </el-button>
         <el-button
           size="large"
           type="warning"

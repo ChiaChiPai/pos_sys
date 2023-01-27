@@ -66,6 +66,26 @@ async function updateOrder({ orderID: order_id, isCheckout: is_checkout }) {
     useErrorHandler({ msg: '發生錯誤: 確認訂單', error })
 }
 
+async function updateOrderItem({ id, count }) {
+  console.log(2, id, count)
+  const {
+    data: { value: { error } }
+  } = await useFetch(
+    '/api/order_list',
+    {
+      method: 'put',
+      headers: useRequestHeaders(['cookie']),
+      body: {
+        id,
+        count
+      }
+    }
+  )
+
+  if(error)
+    useErrorHandler({ msg: '發生錯誤: 修改訂單', error })
+}
+
 
 
 export async function usePostOrderInfo({ discountRate, isCheckout, orderList }) {
@@ -73,6 +93,11 @@ export async function usePostOrderInfo({ discountRate, isCheckout, orderList }) 
   await postOrderList({ orderList, orderID: response[0].order_id })
 }
 
-export async function useUpdateOrder({ isCheckout, orderID }) {
-  await updateOrder({ isCheckout, orderID })
+export async function useUpdateOrder({ orderID, isCheckout }) {
+  await updateOrder({ orderID, isCheckout })
+}
+
+export async function useUpdateOrderItem({ id, count }) {
+  console.log(1, id, count)
+  await updateOrderItem({ id, count })
 }

@@ -8,7 +8,7 @@ export default eventHandler(async(event) => {
       order_id,
       discount,
       is_checkout,
-      order_list(name, price, count)
+      order_list(name, price, count, id)
     `)
   return data
 })
