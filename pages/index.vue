@@ -77,7 +77,6 @@ const changeOrderCount = ({ name, changedCount }) => {
 }
 
 const clearOrderList = () => {
-  console.log('clear order')
   exist_order_list.value = null
 }
 
@@ -131,8 +130,3 @@ const hideCarlist = () => {
     />
   </div>
 </template>
-
-
-<style lang="postcss">
-
-</style>

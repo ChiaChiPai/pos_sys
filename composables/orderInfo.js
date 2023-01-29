@@ -3,12 +3,13 @@ import { useUserStore } from '~/stores/auth'
 const store = useUserStore()
 const { userInfo } = store
 
-async function getOrderInfo() {
+async function getOrderInfo({ startTime, endTime }) {
   const { data, error: { value: error }, refresh, pending } = await useFetch(
     '/api/bill',
     {
       method: 'get',
-      headers: useRequestHeaders(['cookie'])
+      headers: useRequestHeaders(['cookie']),
+      query: { startTime, endTime }
     }
   )
 
@@ -138,8 +139,8 @@ async function deleteOrderItem({ id }) {
     useErrorHandler({ msg: '發生錯誤: 刪除單一品項', error })
 }
 
-export async function useGetOrderInfo() {
-  const { data, refresh, pending } = await getOrderInfo()
+export async function useGetOrderInfo({ startTime, endTime }) {
+  const { data, refresh, pending } = await getOrderInfo({ startTime, endTime })
   const filerBillData = data.value.filter(data => data.order_list.length === 0)
   if(filerBillData.length > 0) {
     filerBillData.forEach(async(data) =>
