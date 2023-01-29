@@ -81,7 +81,7 @@ async function updateOrder({ orderID: order_id, isCheckout: is_checkout }) {
     useErrorHandler({ msg: '發生錯誤: 確認訂單', error })
 }
 
-async function updateOrderItem({ id, count }) {
+async function updateOrderItem({ id, count, modifiedAt: modified_at }) {
   const {
     data: { value: { error } }
   } = await useFetch(
@@ -91,7 +91,8 @@ async function updateOrderItem({ id, count }) {
       headers: useRequestHeaders(['cookie']),
       body: {
         id,
-        count
+        count,
+        modified_at
       }
     }
   )
@@ -156,8 +157,8 @@ export async function useUpdateOrder({ orderID, isCheckout }) {
   await updateOrder({ orderID, isCheckout })
 }
 
-export async function useUpdateOrderItem({ id, count }) {
-  await updateOrderItem({ id, count })
+export async function useUpdateOrderItem({ id, count, modifiedAt }) {
+  await updateOrderItem({ id, count, modifiedAt })
 }
 
 export async function useDeleteOrder({ orderID }) {

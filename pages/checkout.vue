@@ -24,7 +24,8 @@ const hideDialogVisible = () => {
 }
 
 const editConfirm = async({ id, count }) => {
-  await useUpdateOrderItem({ id, count })
+  const modifiedAt = useCurrentTime()
+  await useUpdateOrderItem({ id, count, modifiedAt })
   await refresh()
   isDialogVisible.value = false
 }

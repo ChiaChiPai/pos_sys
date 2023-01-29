@@ -123,17 +123,18 @@ const handleDelete = async({ id }) => {
 </script>
 
 <template>
-  <el-card
-    v-for="(billList, index) in billData"
-    :key="index"
-    class="mb-8"
-  >
-    <div>
-      <div class="mb-2 flex justify-between text-xs text-gray-400">
-        <h6>單號: {{ billList.order_id }}</h6>
-        <p>{{ useFormatDateTime(billList.created_at) }}</p>
-      </div>
-      <client-only>
+  <client-only>
+    <el-card
+      v-for="(billList, index) in billData"
+      :key="index"
+      class="mb-8"
+    >
+      <div>
+        <div class="mb-2 flex justify-between text-xs text-gray-400">
+          <h6>單號: {{ billList.order_id }}</h6>
+          <p>{{ useFormatDateTime(billList.created_at) }}</p>
+        </div>
+
         <el-table
           :data="billList.order_list"
           stripe
@@ -196,19 +197,19 @@ const handleDelete = async({ id }) => {
             </template>
           </el-table-column>
         </el-table>
-      </client-only>
-      <div class="mt-5 flex justify-end">
-        <el-button
-          size="large"
-          type="warning"
-          :disabled="billList.is_checkout"
-          @click="checkOut({ orderID: billList.order_id })"
-        >
-          - - 結帳 - -
-        </el-button>
+        <div class="mt-5 flex justify-end">
+          <el-button
+            size="large"
+            type="warning"
+            :disabled="billList.is_checkout"
+            @click="checkOut({ orderID: billList.order_id })"
+          >
+            - - 結帳 - -
+          </el-button>
+        </div>
       </div>
-    </div>
-  </el-card>
+    </el-card>
+  </client-only>
 </template>
 
 <style lang="postcss">
