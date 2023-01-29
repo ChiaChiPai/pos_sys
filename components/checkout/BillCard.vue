@@ -129,6 +129,10 @@ const handleDelete = async({ id }) => {
     class="mb-8"
   >
     <div>
+      <div class="mb-2 flex justify-between text-xs text-gray-400">
+        <h6>單號: {{ billList.order_id }}</h6>
+        <p>{{ useFormatDateTime(billList.created_at) }}</p>
+      </div>
       <client-only>
         <el-table
           :data="billList.order_list"
