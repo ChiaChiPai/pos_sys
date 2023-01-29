@@ -1,17 +1,13 @@
 <script setup>
 import { useModalStore } from '~~/stores/modal'
 
-const { data: billData, refresh, pending } = await useFetch(
-  '/api/bill',
-  {
-    method: 'get',
-    headers: useRequestHeaders(['cookie'])
-  }
-)
+const { data, refresh, pending } = await useGetOrderInfo()
+const billData = computed(() => data.value.filter(item => item.order_list.length > 0))
 
 const isDialogVisible = ref(false)
 let dialogInfo = reactive([])
 const dialog = useModalStore()
+
 watch(
   () => dialog.editInfo,
   (info) => {
@@ -41,6 +37,7 @@ const editConfirm = async({ id, count }) => {
     <CheckoutBillCard
       :bill-data="billData"
       :refresh="refresh"
+      :pending="pending"
     />
     <CheckoutEditDialog
       :is-dialog-visible="isDialogVisible"

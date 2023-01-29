@@ -3,6 +3,21 @@ import { useUserStore } from '~/stores/auth'
 const store = useUserStore()
 const { userInfo } = store
 
+async function getOrderInfo() {
+  const { data, error: { value: error }, refresh, pending } = await useFetch(
+    '/api/bill',
+    {
+      method: 'get',
+      headers: useRequestHeaders(['cookie'])
+    }
+  )
+
+  if(error)
+    useErrorHandler({ msg: '發生錯誤: 拿取訂單資訊錯誤', error })
+
+  return { data, refresh, pending }
+}
+
 async function postOrder({ discountRate, isCheckout: is_checkout }) {
   const {
     data: { value: { data: response, error } }
@@ -86,6 +101,51 @@ async function updateOrderItem({ id, count }) {
 }
 
 
+async function deleteOrder({ orderID: order_id }) {
+  const {
+    data: { value: { error } }
+  } = await useFetch(
+    '/api/order_overview',
+    {
+      method: 'delete',
+      headers: useRequestHeaders(['cookie']),
+      body: {
+        order_id
+      }
+    }
+  )
+
+  if(error)
+    useErrorHandler({ msg: '發生錯誤: 刪除訂單', error })
+}
+
+async function deleteOrderItem({ id }) {
+  const {
+    data: { value: { error } }
+  } = await useFetch(
+    '/api/order_list',
+    {
+      method: 'delete',
+      headers: useRequestHeaders(['cookie']),
+      body: {
+        id
+      }
+    }
+  )
+
+  if(error)
+    useErrorHandler({ msg: '發生錯誤: 刪除單一品項', error })
+}
+
+export async function useGetOrderInfo() {
+  const { data, refresh, pending } = await getOrderInfo()
+  const filerBillData = data.value.filter(data => data.order_list.length === 0)
+  if(filerBillData.length > 0) {
+    filerBillData.forEach(async(data) =>
+      await useDeleteOrder({ orderID: data.order_id }))
+  }
+  return { data, refresh, pending }
+}
 
 export async function usePostOrderInfo({ discountRate, isCheckout, orderList }) {
   const { response } = await postOrder({ discountRate, isCheckout })
@@ -97,6 +157,13 @@ export async function useUpdateOrder({ orderID, isCheckout }) {
 }
 
 export async function useUpdateOrderItem({ id, count }) {
-  console.log(1, id, count)
   await updateOrderItem({ id, count })
+}
+
+export async function useDeleteOrder({ orderID }) {
+  await deleteOrder({ orderID })
+}
+
+export async function useDeleteOrderItem({ id }) {
+  await deleteOrderItem({ id })
 }

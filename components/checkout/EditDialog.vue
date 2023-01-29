@@ -24,6 +24,7 @@ const cloneDialogInfo = computed(() => cloneDeep(props.dialogInfo))
     <el-dialog
       :model-value="isDialogVisible"
       title="修改單一品項資訊"
+      width="75%"
     >
       <client-only>
         <el-table

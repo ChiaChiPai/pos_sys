@@ -1,5 +1,6 @@
 <script setup>
 import { useModalStore } from '~~/stores/modal'
+import { ElMessage, ElMessageBox } from 'element-plus'
 
 const props = defineProps({
   billData: {
@@ -10,6 +11,10 @@ const props = defineProps({
   refresh: {
     type: Function,
     required: true
+  },
+  pending: {
+    type: Boolean,
+    required: true
   }
 })
 
@@ -19,11 +24,11 @@ const billData = computed(() => {
       ...item,
       order_list: item.order_list
         .map((order, index) => ({
-          ...order, sid: index+1,
+          ...order,
+          sid: index + 1,
           discount: item.discount
         }))
     }))
-
 
   return new Array(0)
     .concat(...billList.filter(bill => !bill.is_checkout).sort((a, b) => b.order_id - a.order_id))
@@ -70,17 +75,50 @@ const spanMethod = ({ rowIndex, columnIndex }) => {
 }
 
 const checkOut = async({ orderID }) => {
-  await useUpdateOrder({ isCheckout: true, orderID })
-  props.refresh()
+  try {
+    await ElMessageBox.confirm(
+      '確定要結帳嗎？',
+      'Warning',
+      {
+        confirmButtonText: '確定',
+        cancelButtonText: '取消',
+        type: 'warning'
+      }
+    )
+    await useFullScreenLoading([
+      async() => await useUpdateOrder({ isCheckout: true, orderID }),
+      async() => await props.refresh()
+    ])
+  }
+  catch (e) {}
 }
 
-const dialog = useModalStore()
-const handleEdit = async(index, editInfo) => {
-  dialog.changeEditInfo(editInfo)
+const handleEdit = async(info) => {
+  const dialog = useModalStore()
+  dialog.changeEditInfo(info)
 }
 
-const handleDelete = async(index, row) => {
-
+const handleDelete = async({ id }) => {
+  try {
+    await ElMessageBox.confirm(
+      '確定要刪除這筆資料嗎？',
+      'Warning',
+      {
+        confirmButtonText: '確定',
+        cancelButtonText: '取消',
+        type: 'warning'
+      }
+    )
+    await useFullScreenLoading([
+      async() => await useDeleteOrderItem({ id }),
+      async() => await props.refresh(),
+      () => ElMessage({
+        type: 'success',
+        message: 'Delete completed'
+      })
+    ])
+  }
+  catch(e) {}
 }
 </script>
 
@@ -133,13 +171,13 @@ const handleDelete = async(index, row) => {
           </el-table-column>
           <el-table-column
             label="Operations"
-            width="185"
+            width="220"
           >
             <template #default="scope">
               <el-button
                 size="large"
                 :disabled="billList.is_checkout"
-                @click="handleEdit(scope.$index, scope.row)"
+                @click="handleEdit(scope.row)"
               >
                 修改
               </el-button>
@@ -147,7 +185,7 @@ const handleDelete = async(index, row) => {
                 size="large"
                 type="danger"
                 :disabled="billList.is_checkout"
-                @click="handleDelete(scope.$index, scope.row)"
+                @click="handleDelete(scope.row)"
               >
                 刪除
               </el-button>
