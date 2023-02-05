@@ -52,14 +52,16 @@ const handleCollapse = () => {
               </template>
             </el-menu-item>
           </router-link>
-          <el-menu-item index="3">
-            <el-icon :size="25">
-              <setting />
-            </el-icon>
-            <template #title>
-              設定
-            </template>
-          </el-menu-item>
+          <router-link to="/chart">
+            <el-menu-item index="3">
+              <el-icon :size="25">
+                <DataAnalysis />
+              </el-icon>
+              <template #title>
+                報表
+              </template>
+            </el-menu-item>
+          </router-link>
           <el-menu-item
             index="4"
             @click="$emit('signOut')"

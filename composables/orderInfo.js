@@ -18,10 +18,25 @@ async function getOrderInfo({ startTime, endTime }) {
 
   return { data, refresh, pending }
 }
+async function getBillHistory({ startTime, endTime }) {
+  const { data, error: { value: error }, refresh, pending } = await useFetch(
+    '/api/order_list',
+    {
+      method: 'get',
+      headers: useRequestHeaders(['cookie']),
+      query: { startTime, endTime }
+    }
+  )
+
+  if(error)
+    useErrorHandler({ msg: '發生錯誤: 拿取帳務資訊錯誤', error })
+
+  return { data, refresh, pending }
+}
 
 async function postOrder({ discountRate, isCheckout: is_checkout }) {
   const {
-    data: { value: { data: response, error } }
+    data: { value: { data: response } }, error: { value: error }
   } = await useFetch(
     '/api/order_overview',
     {
@@ -44,7 +59,7 @@ async function postOrder({ discountRate, isCheckout: is_checkout }) {
 
 async function postOrderList({ orderList, orderID: order_id }) {
   const {
-    data: { value: { error } }
+    error: { value: error }
   } = await useFetch(
     '/api/order_list',
     {
@@ -65,7 +80,7 @@ async function postOrderList({ orderList, orderID: order_id }) {
 
 async function updateOrder({ orderID: order_id, isCheckout: is_checkout }) {
   const {
-    data: { value: { error } }
+    error: { value: error }
   } = await useFetch(
     '/api/order_overview',
     {
@@ -84,7 +99,7 @@ async function updateOrder({ orderID: order_id, isCheckout: is_checkout }) {
 
 async function updateOrderItem({ id, count, modifiedAt: modified_at }) {
   const {
-    data: { value: { error } }
+    error: { value: error }
   } = await useFetch(
     '/api/order_list',
     {
@@ -105,7 +120,7 @@ async function updateOrderItem({ id, count, modifiedAt: modified_at }) {
 
 async function deleteOrder({ orderID: order_id }) {
   const {
-    data: { value: { error } }
+    error: { value: error }
   } = await useFetch(
     '/api/order_overview',
     {
@@ -123,7 +138,7 @@ async function deleteOrder({ orderID: order_id }) {
 
 async function deleteOrderItem({ id }) {
   const {
-    data: { value: { error } }
+    error: { value: error }
   } = await useFetch(
     '/api/order_list',
     {
@@ -147,6 +162,22 @@ export async function useGetOrderInfo({ startTime, endTime }) {
       await useDeleteOrder({ orderID: data.order_id }))
   }
   return { data, refresh, pending }
+}
+
+function billHistoryDTO(data) {
+  return data.map(({ name, price, count, order_id, created_at, order_overview }) => ({
+    name,
+    price,
+    count,
+    order_id,
+    created_at: useFormatDateTime(created_at),
+    discount: order_overview.discount
+  }))
+}
+
+export async function useGetBillHistory({ startTime, endTime }) {
+  const { data, refresh, pending } = await getBillHistory({ startTime, endTime })
+  return { data: billHistoryDTO(data.value), refresh, pending }
 }
 
 export async function usePostOrderInfo({ discountRate, isCheckout, orderList }) {

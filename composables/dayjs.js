@@ -9,3 +9,5 @@ export const useStartOfDay = () => dayjs().startOf('day').utc().format()
 export const useEndOfDay = () => dayjs().endOf('day').utc().format()
 
 export const useCurrentTime = () => dayjs().utc().format()
+
+export const useFormatTime = (date) => dayjs(date).utc().format()
