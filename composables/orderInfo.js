@@ -18,20 +18,81 @@ async function getOrderInfo({ startTime, endTime }) {
 
   return { data, refresh, pending }
 }
-async function getBillHistory({ startTime, endTime }) {
-  const { data, error: { value: error }, refresh, pending } = await useFetch(
-    '/api/order_list',
+
+async function getBillHistory({ startTime, endTime, page = 0 }) {
+  const { data: { value: count } } = await useFetch(
+    '/api/order_list/count',
     {
       method: 'get',
       headers: useRequestHeaders(['cookie']),
       query: { startTime, endTime }
     }
   )
-
+  const pageSize = useLocalStorage('pageSize')
+  const totalPages = Math.floor(count / +pageSize.value) + 1
+  const { data: list, error: { value: error }, refresh, pending } = await useFetch(
+    '/api/order_list',
+    {
+      method: 'get',
+      headers: useRequestHeaders(['cookie']),
+      query: { startTime, endTime, page, pageSize }
+    }
+  )
   if(error)
     useErrorHandler({ msg: '發生錯誤: 拿取帳務資訊錯誤', error })
 
-  return { data, refresh, pending }
+  return { data: { list, totalPages }, refresh, pending }
+}
+
+function buildData(data) {
+
+  return new Promise((resolve, reject) => {
+
+    // 最後所有的資料會存在這
+    const arrayData = []
+
+    // 取 data 的第一個 Object 的 key 當表頭
+    const arrayTitle = Object.keys(data[0])
+    arrayData.push(arrayTitle)
+
+    // 取出每一個 Object 裡的 value，push 進新的 Array 裡
+    Array.prototype.forEach.call(data, d => {
+      const items = []
+      Array.prototype.forEach.call(arrayTitle, title => {
+        const item = d[title] || '無'
+        items.push(item)
+      })
+      arrayData.push(items)
+    })
+
+    resolve(arrayData)
+  })
+
+}
+
+async function getBillHistoryCsv({ startTime, endTime }) {
+  const { data, error: { value: error }, pending } = await useFetch(
+    '/api/order_list/csv',
+    {
+      method: 'get',
+      headers: useRequestHeaders(['cookie']),
+      query: { startTime, endTime }
+    }
+  )
+  const formatData = await buildData(
+    data.value.map(({ order_id, created_at, name, count, order_overview, price }) => ({
+      order_id,
+      created_at: useFormatDateTime(created_at),
+      name,
+      count,
+      discount: order_overview.discount,
+      price
+    }))
+  )
+  if(error)
+    useErrorHandler({ msg: '發生錯誤: 匯出 csv 錯誤', error })
+
+  return { data: formatData, pending }
 }
 
 async function postOrder({ discountRate, isCheckout: is_checkout }) {
@@ -175,9 +236,14 @@ function billHistoryDTO(data) {
   }))
 }
 
-export async function useGetBillHistory({ startTime, endTime }) {
-  const { data, refresh, pending } = await getBillHistory({ startTime, endTime })
-  return { data: billHistoryDTO(data.value), refresh, pending }
+export async function useGetBillHistory({ startTime, endTime, page }) {
+  const { data: { list, totalPages }, refresh, pending } = await getBillHistory({ startTime, endTime, page })
+  return { data: { list: billHistoryDTO(list.value), totalPages }, refresh, pending }
+}
+
+export async function useGetBillHistoryCsv({ startTime, endTime }) {
+  const { data, pending } = await getBillHistoryCsv({ startTime, endTime })
+  return { data, pending }
 }
 
 export async function usePostOrderInfo({ discountRate, isCheckout, orderList }) {
