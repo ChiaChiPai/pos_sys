@@ -1,5 +1,7 @@
 <script setup>
-import { cloneDeep } from 'lodash'
+import pkg from 'lodash'
+const { cloneDeep } = pkg
+
 
 const props = defineProps({
   isDialogVisible: {

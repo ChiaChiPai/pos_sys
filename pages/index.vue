@@ -1,6 +1,7 @@
 <script setup>
-import { groupBy } from 'lodash'
 import { useUserStore } from '~/stores/auth'
+import pkg from 'lodash'
+const { groupBy } = pkg
 
 const tableData = ref({})
 const isShowCartList = ref(false)
