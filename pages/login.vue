@@ -97,7 +97,7 @@ const handleSignUp = (formEl) => {
     :model-value="'signIn'"
     type="border-card"
     :stretch="true"
-    class="absolute left-1/2 top-1/2 w-1/3 -translate-x-1/2 -translate-y-1/2"
+    class="absolute left-1/2 top-1/2 w-1/3 -translate-x-1/2 -translate-y-1/2 sm:w-4/5 md:w-1/2"
   >
     <el-tab-pane
       label="登入"
