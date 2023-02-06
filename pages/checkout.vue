@@ -36,10 +36,17 @@ const editConfirm = async({ id, count }) => {
 <template>
   <div>
     <CheckoutBillCard
+      v-if="billData.length > 0"
       :bill-data="billData"
       :refresh="refresh"
       :pending="pending"
     />
+    <h2
+      v-else
+      class="text-center text-gray-400"
+    >
+      今日還沒有出單資料喔！！
+    </h2>
     <CheckoutEditDialog
       :is-dialog-visible="isDialogVisible"
       :dialog-info="dialogInfo"

@@ -32,7 +32,7 @@ const shortcuts = [
 ]
 const allPage = ref(1)
 const currentPage = ref(1)
-const pageSize = useLocalStorage('pageSize', null,
+const localPageSize = useLocalStorage('pageSize', null,
   {
     serializer: {
       read: (v) => v ? parseInt(v, 10) : null,
@@ -40,6 +40,7 @@ const pageSize = useLocalStorage('pageSize', null,
     }
   }
 )
+const pageSize = localPageSize.value ? localPageSize : ref(25)
 
 const summaryMethod = ({ columns, data }) => {
   if(data.length === 0) return 0
@@ -72,6 +73,7 @@ const searchThroughDateAndTime = async(page = 0) => {
 }
 
 const handleSizeChange = (value) => {
+  localPageSize.value = value
   pageSize.value = value
 }
 
@@ -80,7 +82,6 @@ const downloadCsv = async() => {
     startTime: useFormatTime(dateTimeRange.value[0]),
     endTime: useFormatTime(dateTimeRange.value[1])
   })
-  console.log('csv', data)
   let csvContent = ''
   Array.prototype.forEach.call(data, d => {
     const dataString = `${d.join(',')}\n`
