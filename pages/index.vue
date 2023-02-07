@@ -1,11 +1,12 @@
 <script setup>
 import { useUserStore } from '~/stores/auth'
-import pkg from 'lodash'
-const { groupBy } = pkg
 
-const tableData = ref({})
+const store = useUserStore()
+const { userInfo } = store
+const { data } = await useGetMenuInfo({ userId: userInfo.id })
+
 const isShowCartList = ref(false)
-
+const tableData = data
 const cartTotal = computed(() => exist_order_list.value ? exist_order_list.value.length : 0)
 
 const exist_order_list = useSessionStorage(
@@ -18,26 +19,6 @@ const exist_order_list = useSessionStorage(
     }
   }
 )
-
-const store = useUserStore()
-const { userInfo } = store
-
-const { data: menus } = await useFetch(
-  '/api/menu',
-  {
-    method: 'get',
-    headers: useRequestHeaders(['cookie']),
-    params: {
-      id: userInfo.id
-    }
-  }
-)
-
-const groupMenus = groupBy(menus.value, 'type')
-Object.keys(groupMenus).forEach(key => {
-  groupMenus[key] = groupMenus[key].map((item, idx) => ({ ...item, count: 1, id: idx + 1 }))
-})
-tableData.value = groupMenus
 
 const addToCart = async({ name, count, price, type }) => {
   const mergeArray = (origin, income) => {

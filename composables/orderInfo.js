@@ -46,7 +46,7 @@ async function getBillHistory({ startTime, endTime, page = 0 }) {
 
 function buildData(data) {
 
-  return new Promise((resolve, reject) => {
+  return new Promise((resolve) => {
 
     // 最後所有的資料會存在這
     const arrayData = []

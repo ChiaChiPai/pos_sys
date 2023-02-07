@@ -52,8 +52,18 @@ const handleCollapse = () => {
               </template>
             </el-menu-item>
           </router-link>
-          <router-link to="/chart">
+          <router-link to="/setting">
             <el-menu-item index="3">
+              <el-icon :size="25">
+                <Setting />
+              </el-icon>
+              <template #title>
+                菜單設定
+              </template>
+            </el-menu-item>
+          </router-link>
+          <router-link to="/chart">
+            <el-menu-item index="4">
               <el-icon :size="25">
                 <DataAnalysis />
               </el-icon>
@@ -63,7 +73,7 @@ const handleCollapse = () => {
             </el-menu-item>
           </router-link>
           <el-menu-item
-            index="4"
+            index="5"
             @click="$emit('signOut')"
           >
             <el-icon :size="25">

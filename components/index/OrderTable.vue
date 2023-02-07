@@ -8,8 +8,6 @@ const props = defineProps(
     }
   }
 )
-
-const canNotAddToCart = (info) => info.soldOut || info.count === 0
 </script>
 
 <template>
@@ -54,7 +52,6 @@ const canNotAddToCart = (info) => info.soldOut || info.count === 0
       >
         <template #default="slot">
           <el-button
-            :disabled="canNotAddToCart(slot.row)"
             size="large"
             type="warning"
             plain
@@ -62,22 +59,6 @@ const canNotAddToCart = (info) => info.soldOut || info.count === 0
           >
             加入
           </el-button>
-        </template>
-      </el-table-column>
-      <el-table-column
-        fixed="right"
-        label="設定"
-      >
-        <template #default="slot">
-          <el-switch
-            v-model="slot.row.is_sold_out"
-            class="ml-2"
-            width="60"
-            inline-prompt
-            style="--el-switch-on-color: #F00"
-            active-text="售罄"
-            inactive-text="充足"
-          />
         </template>
       </el-table-column>
     </el-table>
