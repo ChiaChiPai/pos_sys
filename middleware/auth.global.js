@@ -1,15 +1,4 @@
 /* eslint-disable no-undef */
-const getUserInfo = async() => {
-  const { data: userInfo } = await useFetch(
-    '/api/user',
-    {
-      method: 'get',
-      headers: useRequestHeaders(['cookie'])
-    }
-  )
-  useSetUserInfo(userInfo)
-}
-
 export default defineNuxtRouteMiddleware(async(to) => {
   const user = useSupabaseUser()
 

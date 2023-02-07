@@ -1,7 +1,8 @@
 <script setup>
 import { useModalStore } from '~~/stores/modal'
 
-const { data, refresh, pending } = await useGetOrderInfo({ startTime: useStartOfDay(), endTime: useEndOfDay() })
+const user = useSupabaseUser()
+const { data, refresh, pending } = await useGetOrderInfo({ startTime: useStartOfDay(), endTime: useEndOfDay(), userId: user.value.id })
 const billData = computed(() => data.value.filter(item => item.order_list.length > 0))
 
 const isDialogVisible = ref(false)

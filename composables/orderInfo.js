@@ -3,13 +3,13 @@ import { useUserStore } from '~/stores/auth'
 const store = useUserStore()
 const { userInfo } = store
 
-async function getOrderInfo({ startTime, endTime }) {
+async function getOrderInfo({ startTime, endTime, userId }) {
   const { data, error: { value: error }, refresh, pending } = await useFetch(
     '/api/bill',
     {
       method: 'get',
       headers: useRequestHeaders(['cookie']),
-      query: { startTime, endTime }
+      query: { startTime, endTime, userId }
     }
   )
 
@@ -25,7 +25,7 @@ async function getBillHistory({ startTime, endTime, page = 0 }) {
     {
       method: 'get',
       headers: useRequestHeaders(['cookie']),
-      query: { startTime, endTime }
+      query: { startTime, endTime, userId: userInfo.id }
     }
   )
   const pageSize = useLocalStorage('pageSize')
@@ -35,7 +35,7 @@ async function getBillHistory({ startTime, endTime, page = 0 }) {
     {
       method: 'get',
       headers: useRequestHeaders(['cookie']),
-      query: { startTime, endTime, page, pageSize }
+      query: { startTime, endTime, page, pageSize, userId: userInfo.id }
     }
   )
   if(error)
@@ -76,7 +76,7 @@ async function getBillHistoryCsv({ startTime, endTime }) {
     {
       method: 'get',
       headers: useRequestHeaders(['cookie']),
-      query: { startTime, endTime }
+      query: { startTime, endTime, userId: userInfo.id }
     }
   )
   const formatData = await buildData(
@@ -215,8 +215,8 @@ async function deleteOrderItem({ id }) {
     useErrorHandler({ msg: '發生錯誤: 刪除單一品項', error })
 }
 
-export async function useGetOrderInfo({ startTime, endTime }) {
-  const { data, refresh, pending } = await getOrderInfo({ startTime, endTime })
+export async function useGetOrderInfo({ startTime, endTime, userId }) {
+  const { data, refresh, pending } = await getOrderInfo({ startTime, endTime, userId })
   const filerBillData = data.value.filter(data => data.order_list.length === 0)
   if(filerBillData.length > 0) {
     filerBillData.forEach(async(data) =>
