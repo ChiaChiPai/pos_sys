@@ -11,8 +11,27 @@ const isCheckoutOption = [
     label: '未結帳'
   }
 ]
-const isCheckout = ref(true)
-const dateTimeRange = ref('')
+const ruleFormRef = ref(null)
+const form = reactive({
+  isCheckout: ref(true),
+  dateTimeRange: ref([])
+})
+const rules = reactive({
+  isCheckout: [
+    {
+      required: true,
+      message: '請確實輸入',
+      trigger: 'change'
+    }
+  ],
+  dateTimeRange: [
+    {
+      required: true,
+      message: '請確實輸入',
+      trigger: 'change'
+    }
+  ]
+})
 const billHistoryResult = ref([])
 const shortcuts = [
   {
@@ -81,13 +100,18 @@ const summaryMethod = ({ columns, data }) => {
   }, [])
 }
 
+const handleSizeChange = (value) => {
+  localPageSize.value = value
+  pageSize.value = value
+}
+
 const searchThroughDateAndTime = async(page = 0) => {
   const { data } = await useGetBillHistory(
     {
-      startTime: useFormatTime(dateTimeRange.value[0]),
-      endTime: useFormatTime(dateTimeRange.value[1]),
+      startTime: useFormatTime(form.dateTimeRange[0]),
+      endTime: useFormatTime(form.dateTimeRange[1]),
       page,
-      isCheckout
+      isCheckout: form.isCheckout
     }
   )
   const { list, totalPages } = data
@@ -95,16 +119,15 @@ const searchThroughDateAndTime = async(page = 0) => {
   billHistoryResult.value = list
 }
 
-const handleSizeChange = (value) => {
-  localPageSize.value = value
-  pageSize.value = value
+const search = async(formEl) => {
+  useHandleSubmit({ formEl, callback: () => searchThroughDateAndTime(0) })
 }
 
 const downloadCsv = async() => {
   const { data } = await useGetBillHistoryCsv({
-    startTime: useFormatTime(dateTimeRange.value[0]),
-    endTime: useFormatTime(dateTimeRange.value[1]),
-    isCheckout
+    startTime: useFormatTime(form.dateTimeRange[0]),
+    endTime: useFormatTime(form.dateTimeRange[1]),
+    isCheckout: form.isCheckout
   })
   let csvContent = ''
   Array.prototype.forEach.call(data, d => {
@@ -113,8 +136,12 @@ const downloadCsv = async() => {
   })
   const link = document.createElement('a')
   link.setAttribute('href', `data:text/csv;charset=utf-8,%EF%BB%BF${encodeURI(csvContent)}`)
-  link.setAttribute('download', `${useFormatDate(dateTimeRange.value[0])}-${useFormatDate(dateTimeRange.value[1])}`)
+  link.setAttribute('download', `${useFormatDate(form.dateTimeRange[0])}-${useFormatDate(form.dateTimeRange[1])}`)
   link.click()
+}
+
+const searchAndExport = async(formEl) => {
+  useHandleSubmit({ formEl, callback: downloadCsv })
 }
 
 </script>
@@ -126,34 +153,50 @@ const downloadCsv = async() => {
         <div class="mb-2 text-xl">
           <span>歷史帳款查詢</span>
         </div>
-        <div class="flex">
-          <el-select v-model="isCheckout">
-            <el-option
-              v-for="item in isCheckoutOption"
-              :key="item.value"
-              :label="item.label"
-              :value="item.value"
-            />
-          </el-select>
-          <el-date-picker
-            v-model="dateTimeRange"
-            type="datetimerange"
-            :shortcuts="shortcuts"
-            range-separator="到"
-            start-placeholder="開始時間"
-            end-placeholder="結束時間"
-            class="mr-5"
-          />
-          <el-button
-            type="primary"
-            @click="searchThroughDateAndTime(0)"
+        <el-form
+          ref="ruleFormRef"
+          :model="form"
+          :rules="rules"
+          class="flex justify-items-stretch"
+        >
+          <el-form-item prop="isCheckout">
+            <el-select v-model="form.isCheckout">
+              <el-option
+                v-for="item in isCheckoutOption"
+                :key="item.value"
+                :label="item.label"
+                :value="item.value"
+              />
+            </el-select>
+          </el-form-item>
+          <el-form-item
+            class="flex-1"
+            prop="dateTimeRange"
           >
-            查詢
-          </el-button>
-          <el-button @click="downloadCsv">
-            匯出全部
-          </el-button>
-        </div>
+            <el-date-picker
+              v-model="form.dateTimeRange"
+              type="datetimerange"
+              :shortcuts="shortcuts"
+              range-separator="到"
+              start-placeholder="開始時間"
+              end-placeholder="結束時間"
+              class="mr-5"
+            />
+          </el-form-item>
+          <el-form-item>
+            <el-button
+              type="primary"
+              @click="search(ruleFormRef)"
+            >
+              查詢
+            </el-button>
+          </el-form-item>
+          <el-form-item>
+            <el-button @click="searchAndExport(ruleFormRef)">
+              匯出全部
+            </el-button>
+          </el-form-item>
+        </el-form>
       </el-card>
       <el-table
         :data="billHistoryResult"

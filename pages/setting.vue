@@ -35,17 +35,6 @@ const rules = reactive({
   ]
 })
 
-const handleSubmit = async({ formEl, callback }) => {
-  try {
-    if(formEl)
-      await formEl.validate()
-    await useFullScreenLoading([callback])
-  }
-  catch (error) {
-    throw createError(error)
-  }
-}
-
 const postMenuItem = async() => {
   await usePostMenuItem({ payload: { ...form, user_id: userInfo.id } })
   refreshTable()
@@ -57,12 +46,12 @@ const deleteMenuItem = async({ id }) => {
 }
 
 const addItem = async(formEl) => {
-  handleSubmit({ formEl, callback: postMenuItem })
+  useHandleSubmit({ formEl, callback: postMenuItem })
 }
 
 const deleteItem = async({ id }) => {
   const callback = () => deleteMenuItem({ id })
-  handleSubmit({ callback })
+  useHandleSubmit({ callback })
 }
 </script>
 
