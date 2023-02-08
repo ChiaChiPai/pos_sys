@@ -44,7 +44,7 @@ const editConfirm = async({ id, count }) => {
     />
     <h2
       v-else
-      class="text-center text-gray-400"
+      class="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 text-gray-400"
     >
       今日還沒有出單資料喔！！
     </h2>

@@ -74,6 +74,7 @@ const hideCarlist = () => {
   <div>
     <div class="relative h-screen">
       <el-tabs
+        v-if="Object.keys(tableData).length > 0"
         v-model="Object.keys(tableData)[0]"
         type="card"
       >
@@ -89,6 +90,12 @@ const hideCarlist = () => {
           />
         </el-tab-pane>
       </el-tabs>
+      <h1
+        v-else
+        class="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 text-gray-400"
+      >
+        還沒建立菜單資訊，請先到"菜單設定"頁面新增菜單...
+      </h1>
     </div>
     <div>
       <template
