@@ -28,6 +28,7 @@ const billData = computed(() => {
           sid: index + 1,
           discount: item.discount
         }))
+        .sort((a, b) => a.id - b.id)
     }))
 
   return new Array(0)

@@ -19,13 +19,13 @@ async function getOrderInfo({ startTime, endTime, userId }) {
   return { data, refresh, pending }
 }
 
-async function getBillHistory({ startTime, endTime, page = 0 }) {
+async function getBillHistory({ startTime, endTime, page = 0, isCheckout }) {
   const { data: { value: count } } = await useFetch(
     '/api/order_list/count',
     {
       method: 'get',
       headers: useRequestHeaders(['cookie']),
-      query: { startTime, endTime, userId: userInfo.id }
+      query: { startTime, endTime, userId: userInfo.id, isCheckout }
     }
   )
   const pageSize = useLocalStorage('pageSize')
@@ -35,7 +35,7 @@ async function getBillHistory({ startTime, endTime, page = 0 }) {
     {
       method: 'get',
       headers: useRequestHeaders(['cookie']),
-      query: { startTime, endTime, page, pageSize, userId: userInfo.id }
+      query: { startTime, endTime, page, pageSize, userId: userInfo.id, isCheckout }
     }
   )
   if(error)
@@ -70,13 +70,13 @@ function buildData(data) {
 
 }
 
-async function getBillHistoryCsv({ startTime, endTime }) {
+async function getBillHistoryCsv({ startTime, endTime, isCheckout }) {
   const { data, error: { value: error }, pending } = await useFetch(
     '/api/order_list/csv',
     {
       method: 'get',
       headers: useRequestHeaders(['cookie']),
-      query: { startTime, endTime, userId: userInfo.id }
+      query: { startTime, endTime, userId: userInfo.id, isCheckout }
     }
   )
   const formatData = await buildData(
@@ -232,17 +232,18 @@ function billHistoryDTO(data) {
     count,
     order_id,
     created_at: useFormatDateTime(created_at),
-    discount: order_overview.discount
+    discount: order_overview.discount,
+    isCheckout: order_overview.is_checkout ? '已結帳' : '未結帳'
   }))
 }
 
-export async function useGetBillHistory({ startTime, endTime, page }) {
-  const { data: { list, totalPages }, refresh, pending } = await getBillHistory({ startTime, endTime, page })
+export async function useGetBillHistory(payload) {
+  const { data: { list, totalPages }, refresh, pending } = await getBillHistory(payload)
   return { data: { list: billHistoryDTO(list.value), totalPages }, refresh, pending }
 }
 
-export async function useGetBillHistoryCsv({ startTime, endTime }) {
-  const { data, pending } = await getBillHistoryCsv({ startTime, endTime })
+export async function useGetBillHistoryCsv({ startTime, endTime, isCheckout }) {
+  const { data, pending } = await getBillHistoryCsv({ startTime, endTime, isCheckout })
   return { data, pending }
 }
 

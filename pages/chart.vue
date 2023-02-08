@@ -1,32 +1,54 @@
 <script setup>
+import dayjs from 'dayjs'
+
+const isCheckoutOption = [
+  {
+    value: true,
+    label: '已結帳'
+  },
+  {
+    value: false,
+    label: '未結帳'
+  }
+]
+const isCheckout = ref(true)
 const dateTimeRange = ref('')
 const billHistoryResult = ref([])
 const shortcuts = [
   {
-    text: 'Last week',
+    text: 'Last Month',
     value: () => {
-      const end = new Date()
-      const start = new Date()
-      start.setTime(start.getTime() - (3600 * 1000 * 24 * 7))
-      return [start, end]
+      return [dayjs().month(dayjs().month()-1).startOf('month'), dayjs().month(dayjs().month()-1).endOf('month')]
     }
   },
   {
-    text: 'Last month',
+    text: 'Last Week',
     value: () => {
-      const end = new Date()
-      const start = new Date()
-      start.setTime(start.getTime() - (3600 * 1000 * 24 * 30))
-      return [start, end]
+      return [dayjs().subtract(7, 'day').startOf('week'), dayjs().subtract(7, 'day').endOf('week')]
     }
   },
   {
-    text: 'Last 3 months',
+    text: 'This Month',
     value: () => {
-      const end = new Date()
-      const start = new Date()
-      start.setTime(start.getTime() - (3600 * 1000 * 24 * 90))
-      return [start, end]
+      return [dayjs().startOf('month'), dayjs()]
+    }
+  },
+  {
+    text: 'This Week',
+    value: () => {
+      return [dayjs().startOf('week'), dayjs()]
+    }
+  },
+  {
+    text: 'Yesterday',
+    value: () => {
+      return [dayjs().subtract(1, 'day').startOf('day'), dayjs().subtract(1, 'day').endOf('day')]
+    }
+  },
+  {
+    text: 'Today',
+    value: () => {
+      return [dayjs().startOf('day'), dayjs()]
     }
   }
 ]
@@ -64,7 +86,8 @@ const searchThroughDateAndTime = async(page = 0) => {
     {
       startTime: useFormatTime(dateTimeRange.value[0]),
       endTime: useFormatTime(dateTimeRange.value[1]),
-      page
+      page,
+      isCheckout
     }
   )
   const { list, totalPages } = data
@@ -80,7 +103,8 @@ const handleSizeChange = (value) => {
 const downloadCsv = async() => {
   const { data } = await useGetBillHistoryCsv({
     startTime: useFormatTime(dateTimeRange.value[0]),
-    endTime: useFormatTime(dateTimeRange.value[1])
+    endTime: useFormatTime(dateTimeRange.value[1]),
+    isCheckout
   })
   let csvContent = ''
   Array.prototype.forEach.call(data, d => {
@@ -103,6 +127,14 @@ const downloadCsv = async() => {
           <span>歷史帳款查詢</span>
         </div>
         <div class="flex">
+          <el-select v-model="isCheckout">
+            <el-option
+              v-for="item in isCheckoutOption"
+              :key="item.value"
+              :label="item.label"
+              :value="item.value"
+            />
+          </el-select>
           <el-date-picker
             v-model="dateTimeRange"
             type="datetimerange"
@@ -143,6 +175,10 @@ const downloadCsv = async() => {
           prop="created_at"
           label="建立時間"
           width="180"
+        />
+        <el-table-column
+          prop="isCheckout"
+          label="狀態"
         />
         <el-table-column
           prop="name"

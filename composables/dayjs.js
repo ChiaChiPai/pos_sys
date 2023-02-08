@@ -8,9 +8,9 @@ export const useFormatDateTime = (date) => dayjs(date).format('YYYY-MM-DD HH:mm:
 
 export const useFormatDate = (date) => dayjs(date).format('YYYY-MM-DD')
 
-export const useStartOfDay = () => dayjs.tz(dayjs().startOf('day').format('YYYY-MM-DD HH:mm:ss'), 'Asia/Taipei').format()
+export const useStartOfYesterday = () => dayjs.tz(dayjs().subtract(1, 'day').startOf('day').format('YYYY-MM-DD HH:mm:ss'), 'Asia/Taipei').format()
 
-export const useEndOfDay = () => dayjs.tz(dayjs().endOf('day').format('YYYY-MM-DD HH:mm:ss'), 'Asia/Taipei').format()
+export const useEndOfToday = () => dayjs.tz(dayjs().endOf('day').format('YYYY-MM-DD HH:mm:ss'), 'Asia/Taipei').format()
 
 export const useCurrentTime = () => dayjs().utc().format()
 
